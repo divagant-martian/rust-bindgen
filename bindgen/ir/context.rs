@@ -2337,8 +2337,8 @@ If you encounter an error missing from this list, please file an issue or a PR!"
                     if !self.options().allowlisted_files.is_empty() {
                         if let Some(location) = item.location() {
                             let (file, _, _, _) = location.location();
-                            println!("cargo:warning={:?}", file.name());
                             if let Some(filename) = file.name() {
+                                println!("cargo:warning=trying to allowlist file: {}", filename);
                                 if self
                                     .options()
                                     .allowlisted_files
