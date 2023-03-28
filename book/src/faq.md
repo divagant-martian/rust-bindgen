@@ -7,6 +7,7 @@
 - [Why isn't `bindgen` generating bindings to inline functions?](#why-isnt-bindgen-generating-bindings-to-inline-functions)
 - [Does `bindgen` support the C++ Standard Template Library (STL)?](#does-bindgen-support-the-c-standard-template-library-stl)
 - [How to deal with bindgen generated padding fields?](#how-to-deal-with-bindgen-generated-padding-fields)
+- [How to generate bindings for a custom target?](#how-to-generate-bindings-for-a-custom-target)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -52,6 +53,13 @@ Note that these functions and methods are usually marked inline for a reason:
 they tend to be hot. The above workaround makes them an out-of-line call, which
 might not provide acceptable performance.
 
+As an alternative, you can invoke `bindgen` with either the
+`bindgen::Builder::wrap_static_fns` method or the `--wrap-static-fns` flag.
+Which generates a C source file that can be compiled against the input headers
+to produce Rust headers for `static` and `static inline` functions. See [How to
+handle `static inline` functions](https://github.com/rust-lang/rust-bindgen/discussions/2405)
+for further information.
+
 ### Does `bindgen` support the C++ Standard Template Library (STL)?
 
 Sort of. A little. Depends what you mean by "support".
@@ -68,7 +76,7 @@ you're binding to that is pulling in STL headers.
 ### How to deal with bindgen generated padding fields?
 
 Depending the architecture, toolchain versions and source struct, it is
-possible that bindgen will generate padding fields named `__bindgen_padding_N`. 
+possible that bindgen will generate padding fields named `__bindgen_padding_N`.
 As these fields might be present when compiling for one architecture but not
 for an other, you should not initialize these fields manually when initializing
 the struct. Instead, use the `Default` trait. You can either enable this when
@@ -95,3 +103,15 @@ SRC_DATA {
 
 In the case bindgen generates a padding field, then this field will
 be automatically initialized by `..Default::default()`.
+
+### How to generate bindings for a custom target?
+
+To generate bindings for a custom target you only need to pass the `--target`
+argument to `libclang`. For example, if you want to generate bindings for the
+`armv7a-none-eabi` target using the command line, you need to invoke `bindgen`
+like so:
+```bash
+$ bindgen <input_headers> -- --target=armv7a-none-eabi
+```
+If you are using `bindgen` as a library, you should call
+`builder.clang_arg("--target=armv7a-none-eabi")` on your `builder`.

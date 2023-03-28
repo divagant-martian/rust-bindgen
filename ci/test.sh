@@ -110,9 +110,6 @@ get_cargo_args() {
   if [ "$BINDGEN_FEATURE_EXTRA_ASSERTS" == "1"  ]; then
     features+=" testing_only_extra_assertions"
   fi
-  if [ "$BINDGEN_FEATURE_TESTING_ONLY_DOCS" == "1"  ]; then
-    features+=" testing_only_docs"
-  fi
   if [ ! -z "$features" ]; then
     args+=" --features $(echo $features | tr ' ' ',')"
   fi
@@ -126,11 +123,11 @@ fi
 CARGO_ARGS=`get_cargo_args`
 
 # Ensure we build without warnings
-cargo rustc --lib $CARGO_ARGS -- -Dwarnings
+RUSTFLAGS="-Dwarnings" cargo check $CARGO_ARGS
 
 if [ "$BINDGEN_MAIN_TESTS" == "1" ]; then
   # Run the tests
-  cargo test $CARGO_ARGS
+  (cd bindgen-tests && cargo test $CARGO_ARGS)
 fi
 
 assert_no_diff
